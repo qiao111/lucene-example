@@ -32,6 +32,10 @@ import org.junit.Test;
  */
 public class LanguageTest {
 	
+	/**
+	 * 测试不同分析器对汉语的解析过程
+	 * @throws IOException
+	 */
 	@Test
 	public void testLanguageAnalyzer() throws IOException{
 		Analyzer[] analyzers = new Analyzer[]{
@@ -51,6 +55,11 @@ public class LanguageTest {
 		}
 	}
 	
+	/**
+	 * 测试CJK分析器查询单个词
+	 * @throws IOException
+	 * @throws ParseException
+	 */
 	@Test
 	public void test() throws IOException, ParseException{
 		Directory directory = new RAMDirectory();
