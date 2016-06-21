@@ -10,11 +10,20 @@ import org.apache.lucene.document.TextField;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
+import org.apache.lucene.index.Term;
+import org.apache.lucene.search.FieldDoc;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
+import org.apache.lucene.search.ScoreDoc;
+import org.apache.lucene.search.Sort;
+import org.apache.lucene.search.SortField;
+import org.apache.lucene.search.TermQuery;
+import org.apache.lucene.search.TopDocs;
+import org.apache.lucene.search.TopFieldDocs;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.RAMDirectory;
 import org.junit.Before;
+import org.junit.Test;
 
 public class DistanceSorttingTest {
 	private Directory directory;
@@ -45,5 +54,43 @@ public class DistanceSorttingTest {
 		doc.add(new TextField("type",type,Store.YES));
 		doc.add(new TextField("location",x+"," + y,Store.YES));
 		writer.addDocument(doc);
+	}
+	
+	/**
+	 * 测试离家最近的餐馆
+	 */
+	@Test
+	public void testNearHome(){
+		query = new TermQuery(new Term("type","restaurant"));
+		Sort sort = new Sort(new SortField("location", new DistanceComparatorSource(10, 10)));
+		try {
+			TopDocs topDocs = searcher.search(query, 10, sort);
+			for(ScoreDoc score:topDocs.scoreDocs){
+				Document doc = searcher.doc(score.doc);
+				System.out.println(doc.get("name"));
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	/**
+	 * 测试离工作地点最近的餐馆并显示其距离
+	 */
+	@Test
+	public void testNearWorkAndDistance(){
+		query = new TermQuery(new Term("type","restaurant"));
+		Sort sort = new Sort(new SortField("location", new DistanceComparatorSource(0, 0)));
+		try {
+			TopFieldDocs topFieldDocs = searcher.search(query, 10, sort);
+			for(ScoreDoc score:topFieldDocs.scoreDocs){
+				Document doc = searcher.doc(score.doc);
+				FieldDoc fieldDoc = (FieldDoc) score;
+				System.out.println("name:" + doc.get("name") + 
+						",distance:" + fieldDoc.fields[0]);
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 }
